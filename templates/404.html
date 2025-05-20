@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="error-container" style="text-align: center; padding: 50px 0;">
+    <h1 style="font-size: 72px; margin-bottom: 20px; color: var(--primary-color);">404</h1>
+    <h2>Sahifa topilmadi</h2>
+    <p style="margin-bottom: 30px;">Siz qidirayotgan sahifa mavjud emas yoki o'chirilgan.</p>
+    <a href="{{ url_for('index') }}" style="display: inline-block; padding: 10px 20px; background: var(--gradient-primary); color: white; text-decoration: none; border-radius: 30px; box-shadow: var(--box-shadow);">
+        <i class="fas fa-home"></i> Bosh sahifaga qaytish
+    </a>
+</div>
+{% endblock %}

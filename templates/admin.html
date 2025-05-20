@@ -1,0 +1,491 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section>
+    <div class="admin-header">
+        <h2>Admin Panel</h2>
+        <div class="admin-actions">
+            <button id="addMovieBtn"><i class="fas fa-plus"></i> Yangi Kino Qo'shish</button>
+            <button id="deleteAllBtn"><i class="fas fa-trash-alt"></i> Barcha Kinolarni O'chirish</button>
+            <button id="exportJsonBtn"><i class="fas fa-file-export"></i> JSON Eksport</button>
+            <button id="importJsonBtn"><i class="fas fa-file-import"></i> JSON Import</button>
+            <input type="file" id="importJsonInput" accept=".json" style="display: none;">
+            <a href="{{ url_for('logout') }}"><button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Chiqish</button></a>
+        </div>
+    </div>
+    
+    <div id="adminMoviesList" class="movies-grid">
+        <!-- Movies will be loaded dynamically with JavaScript -->
+        {% if movies|length == 0 %}
+        <div class="no-movies">Hech qanday kino topilmadi</div>
+        {% else %}
+        {% for movie in movies %}
+        <div class="movie-card admin-movie-card" data-id="{{ movie.id }}">
+            <div class="movie-poster">
+                <img src="{{ movie.poster }}" alt="{{ movie.title }}">
+            </div>
+            <div class="movie-info">
+                <h3>{{ movie.title }}</h3>
+                <p><i class="fas fa-calendar-alt"></i> {{ movie.year }}</p>
+                <p><i class="fas fa-film"></i> {{ movie.genre }}</p>
+            </div>
+            <div class="admin-movie-actions">
+                <button class="edit-btn" data-id="{{ movie.id }}"><i class="fas fa-edit"></i></button>
+                <button class="delete-btn" data-id="{{ movie.id }}"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</section>
+
+<!-- Movie Form Modal -->
+<div id="movieForm" class="hidden">
+    <form id="addEditMovieForm">
+        <h3 id="formTitle">Yangi Kino Qo'shish</h3>
+        
+        <input type="hidden" id="movieId" name="movieId">
+        
+        <div class="form-group">
+            <label for="title">Kino Nomi *</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="year">Yili *</label>
+            <input type="number" id="year" name="year" min="1900" max="2099" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="genre">Janr *</label>
+            <input type="text" id="genre" name="genre" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="director">Rejissor</label>
+            <input type="text" id="director" name="director">
+        </div>
+        
+        <div class="form-group">
+            <label for="poster">Poster URL *</label>
+            <input type="url" id="poster" name="poster" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Tavsif</label>
+            <textarea id="description" name="description"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="trailerUrl">Treyler URL (YouTube)</label>
+            <input type="url" id="trailerUrl" name="trailerUrl">
+        </div>
+        
+        <div class="form-group">
+            <label for="telegramLink">Telegram Link</label>
+            <input type="url" id="telegramLink" name="telegramLink" value="https://t.me/movienestuz_bot">
+        </div>
+        
+        <div class="form-buttons">
+            <button type="button" id="cancelFormBtn">Bekor Qilish</button>
+            <button type="submit" id="saveMovieBtn">Saqlash</button>
+        </div>
+    </form>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="modal hidden">
+    <div class="modal-content">
+        <h3>Tasdiqlash</h3>
+        <p id="confirmMessage"></p>
+        <div class="modal-buttons">
+            <button id="confirmYes">Ha</button>
+            <button id="confirmNo">Yo'q</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Pass initial movies data to JavaScript
+    window.initialMovies = {{ movies|tojson|safe }};
+    window.isAdminPanel = true;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize admin panel
+        initAdminPanel();
+        
+        // Add 3D effect to movie cards
+        const movieCards = document.querySelectorAll('.movie-card');
+        movieCards.forEach(card => {
+            add3DEffectToCard(card);
+        });
+        
+        // Event listeners for admin actions
+        document.getElementById('addMovieBtn').addEventListener('click', showAddMovieForm);
+        document.getElementById('deleteAllBtn').addEventListener('click', confirmDeleteAllMovies);
+        document.getElementById('exportJsonBtn').addEventListener('click', exportMoviesToJson);
+        document.getElementById('importJsonBtn').addEventListener('click', () => {
+            document.getElementById('importJsonInput').click();
+        });
+        document.getElementById('importJsonInput').addEventListener('change', importMoviesFromJson);
+        document.getElementById('cancelFormBtn').addEventListener('click', hideMovieForm);
+        document.getElementById('addEditMovieForm').addEventListener('submit', saveMovie);
+        document.getElementById('confirmNo').addEventListener('click', closeConfirmModal);
+        
+        // Add event listeners to edit and delete buttons
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const movieId = this.getAttribute('data-id');
+                editMovie(movieId);
+            });
+        });
+        
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const movieId = this.getAttribute('data-id');
+                confirmDeleteMovie(movieId);
+            });
+        });
+    });
+    
+    // Show add movie form
+    function showAddMovieForm() {
+        const formTitle = document.getElementById('formTitle');
+        const movieIdInput = document.getElementById('movieId');
+        const titleInput = document.getElementById('title');
+        const yearInput = document.getElementById('year');
+        const genreInput = document.getElementById('genre');
+        const directorInput = document.getElementById('director');
+        const posterInput = document.getElementById('poster');
+        const descriptionInput = document.getElementById('description');
+        const trailerUrlInput = document.getElementById('trailerUrl');
+        const telegramLinkInput = document.getElementById('telegramLink');
+        
+        formTitle.textContent = "Yangi Kino Qo'shish";
+        movieIdInput.value = "";
+        titleInput.value = "";
+        yearInput.value = new Date().getFullYear();
+        genreInput.value = "";
+        directorInput.value = "";
+        posterInput.value = "";
+        descriptionInput.value = "";
+        trailerUrlInput.value = "";
+        telegramLinkInput.value = "https://t.me/movienestuz_bot";
+        
+        document.getElementById('movieForm').classList.remove('hidden');
+    }
+    
+    // Hide movie form
+    function hideMovieForm() {
+        document.getElementById('movieForm').classList.add('hidden');
+    }
+    
+    // Edit movie
+    function editMovie(movieId) {
+        const movie = window.initialMovies.find(m => m.id === parseInt(movieId));
+        if (!movie) {
+            showNotification('Kino topilmadi!', true);
+            return;
+        }
+        
+        const formTitle = document.getElementById('formTitle');
+        const movieIdInput = document.getElementById('movieId');
+        const titleInput = document.getElementById('title');
+        const yearInput = document.getElementById('year');
+        const genreInput = document.getElementById('genre');
+        const directorInput = document.getElementById('director');
+        const posterInput = document.getElementById('poster');
+        const descriptionInput = document.getElementById('description');
+        const trailerUrlInput = document.getElementById('trailerUrl');
+        const telegramLinkInput = document.getElementById('telegramLink');
+        
+        formTitle.textContent = "Kinoni Tahrirlash";
+        movieIdInput.value = movie.id;
+        titleInput.value = movie.title || "";
+        yearInput.value = movie.year || new Date().getFullYear();
+        genreInput.value = movie.genre || "";
+        directorInput.value = movie.director || "";
+        posterInput.value = movie.poster || "";
+        descriptionInput.value = movie.description || "";
+        trailerUrlInput.value = movie.trailerUrl || "";
+        telegramLinkInput.value = movie.telegramLink || "https://t.me/movienestuz_bot";
+        
+        document.getElementById('movieForm').classList.remove('hidden');
+    }
+    
+    // Save movie
+    async function saveMovie(e) {
+        e.preventDefault();
+        
+        const movieId = document.getElementById('movieId').value;
+        const movie = {
+            title: document.getElementById('title').value,
+            year: parseInt(document.getElementById('year').value),
+            genre: document.getElementById('genre').value,
+            director: document.getElementById('director').value,
+            poster: document.getElementById('poster').value,
+            description: document.getElementById('description').value,
+            trailerUrl: document.getElementById('trailerUrl').value,
+            telegramLink: document.getElementById('telegramLink').value
+        };
+        
+        // Validate required fields
+        if (!movie.title || !movie.year || !movie.genre || !movie.poster) {
+            showNotification("Iltimos, barcha majburiy maydonlarni to'ldiring!", true);
+            return;
+        }
+        
+        try {
+            let response;
+            if (movieId) {
+                // Update existing movie
+                response = await fetch(`/api/movies/${movieId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(movie)
+                });
+            } else {
+                // Add new movie
+                response = await fetch('/api/movies', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(movie)
+                });
+            }
+            
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                hideMovieForm();
+                showNotification(movieId ? "Kino muvaffaqiyatli yangilandi!" : "Yangi kino muvaffaqiyatli qo'shildi!");
+                // Reload the page to show updated data
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showNotification("Xatolik yuz berdi: " + (result.error || "Noma'lum xato"), true);
+            }
+        } catch (error) {
+            console.error('Error saving movie:', error);
+            showNotification("Xatolik yuz berdi: " + error.message, true);
+        }
+    }
+    
+    // Confirm delete movie
+    function confirmDeleteMovie(movieId) {
+        showConfirmModal("Haqiqatan ham bu kinoni o'chirishni xohlaysizmi?", () => {
+            deleteMovie(movieId);
+        });
+    }
+    
+    // Delete movie
+    async function deleteMovie(movieId) {
+        try {
+            const response = await fetch(`/api/movies/${movieId}`, {
+                method: 'DELETE'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showNotification("Kino muvaffaqiyatli o'chirildi!");
+                // Reload the page to show updated data
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showNotification("Xatolik yuz berdi: " + (result.error || "Noma'lum xato"), true);
+            }
+        } catch (error) {
+            console.error('Error deleting movie:', error);
+            showNotification("Xatolik yuz berdi: " + error.message, true);
+        }
+    }
+    
+    // Confirm delete all movies
+    function confirmDeleteAllMovies() {
+        showConfirmModal("Haqiqatan ham barcha kinolarni o'chirishni xohlaysizmi?", deleteAllMovies);
+    }
+    
+    // Delete all movies
+    async function deleteAllMovies() {
+        try {
+            const response = await fetch('/api/movies/delete-all', {
+                method: 'DELETE'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showNotification("Barcha kinolar muvaffaqiyatli o'chirildi!");
+                // Reload the page to show updated data
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showNotification("Xatolik yuz berdi: " + (result.error || "Noma'lum xato"), true);
+            }
+        } catch (error) {
+            console.error('Error deleting all movies:', error);
+            showNotification("Xatolik yuz berdi: " + error.message, true);
+        }
+    }
+    
+    // Export movies to JSON
+    function exportMoviesToJson() {
+        if (window.initialMovies.length === 0) {
+            showNotification("Eksport qilish uchun kinolar mavjud emas!", true);
+            return;
+        }
+        
+        const dataStr = JSON.stringify(window.initialMovies, null, 2);
+        const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+        
+        const exportFileDefaultName = "movies.json";
+        
+        const linkElement = document.createElement("a");
+        linkElement.setAttribute("href", dataUri);
+        linkElement.setAttribute("download", exportFileDefaultName);
+        linkElement.click();
+        
+        showNotification("Kinolar muvaffaqiyatli eksport qilindi!");
+    }
+    
+    // Import movies from JSON
+    function importMoviesFromJson(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const importedMovies = JSON.parse(event.target.result);
+                if (Array.isArray(importedMovies)) {
+                    showConfirmModal("Mavjud kinolar o'rniga yangi kinolarni import qilishni tasdiqlaysizmi?", async () => {
+                        try {
+                            // Delete all movies first
+                            await fetch("/api/movies/delete-all", { method: "DELETE" });
+                            
+                            // Add each movie
+                            for (const movie of importedMovies) {
+                                // Make a copy of the movie without the id to let the server assign a new one
+                                const movieData = { ...movie };
+                                delete movieData.id;
+                                
+                                await fetch("/api/movies", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify(movieData),
+                                });
+                            }
+                            
+                            showNotification("Kinolar muvaffaqiyatli import qilindi!");
+                            // Reload the page to show updated data
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } catch (error) {
+                            showNotification("Import qilishda xatolik yuz berdi: " + error.message, true);
+                        }
+                    });
+                } else {
+                    showNotification("Noto'g'ri JSON fayl formati!", true);
+                }
+            } catch (error) {
+                showNotification("Faylni o'qishda xatolik yuz berdi: " + error.message, true);
+            }
+        };
+        reader.readAsText(file);
+        // Clear input value (for re-importing)
+        e.target.value = "";
+    }
+    
+    // Show confirmation modal
+    function showConfirmModal(message, onConfirm) {
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmModal').classList.remove('hidden');
+        
+        // Remove previous event listener
+        const confirmYes = document.getElementById('confirmYes');
+        const newConfirmYes = confirmYes.cloneNode(true);
+        confirmYes.parentNode.replaceChild(newConfirmYes, confirmYes);
+        
+        // Add new event listener
+        newConfirmYes.addEventListener('click', () => {
+            onConfirm();
+            closeConfirmModal();
+        });
+    }
+    
+    // Close confirmation modal
+    function closeConfirmModal() {
+        document.getElementById('confirmModal').classList.add('hidden');
+    }
+    
+    // Initialize admin panel
+    function initAdminPanel() {
+        console.log('Admin panel initialized');
+    }
+    
+    // Add 3D effect to card
+    function add3DEffectToCard(card) {
+        console.log('3D effect added to card');
+    }
+    
+    // Show notification
+    function showNotification(message, isError = false) {
+        // Remove existing notification
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+        
+        // Create new notification
+        const notification = document.createElement('div');
+        notification.className = `notification ${isError ? 'error' : 'success'}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="${isError ? 'fas fa-exclamation-circle' : 'fas fa-check-circle'}"></i>
+                <p>${message}</p>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Show notification
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+        
+        // Hide notification after 3 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div id="userView" class="active">
+    <section>
+        <h2>Barcha Kinolar</h2>
+        <div id="moviesList" class="movies-grid">
+            <!-- Movies will be loaded dynamically with JavaScript -->
+        </div>
+    </section>
+</div>
+
+<div id="movieDetails" class="hidden">
+    <button id="backBtn"><i class="fas fa-arrow-left"></i> Orqaga</button>
+    <div id="movieDetailContent">
+        <!-- Movie details will be loaded dynamically with JavaScript -->
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Pass initial movies data to JavaScript
+    window.initialMovies = {{ movies|tojson|safe }};
+    window.isAdminPanel = false;
+</script>
+{% endblock %}

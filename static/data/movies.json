@@ -1,9 +1,9 @@
 [
     {
-        "title": "vsa",
-        "year": 2000,
-        "genre": "veal",
-        "director": "SVD",
+        "title": "SARKARDA JUMONG",
+        "year": 2001,
+        "genre": "JANGARI",
+        "director": "AZIZ",
         "poster": "https://th.bing.com/th/id/R.bcace2ab58c287a1adcf6571954c947a?rik=20lFAxrnKgRPBg&pid=ImgRaw&r=0",
         "description": "JUMONG",
         "trailerUrl": "https://youtu.be/tjP4P1898c0?si=XtPhB8RvYxwaSLjV",
@@ -11,14 +11,36 @@
         "id": 2
     },
     {
-        "title": "qewvqv",
-        "year": 2025,
-        "genre": "v, bin",
-        "director": "hav ,bn",
-        "poster": "https://bloximages.chicago2.vip.townnews.com/qctimes.com/content/tncms/assets/v3/editorial/a/e1/ae145dc0-52e0-5092-abd2-bc60661092c8/5b639d5b98440.image.png",
-        "description": "htnrgbfe",
-        "trailerUrl": "https://youtu.be/AhW4aKq4Tdo?si=GcW3y6McMSq0E-vD",
+        "title": "Bo'ysinmas",
+        "year": 2006,
+        "genre": "Urush",
+        "director": "Zoir",
+        "poster": "https://th.bing.com/th/id/OIP.-Jww8E18MgcAhjOHjUr5hwHaK4?cb=iwp2&rs=1&pid=ImgDetMain",
+        "description": "korish kere ",
+        "trailerUrl": "https://youtu.be/AysZUNR0hV8?si=2rpy6NGq7w8wck3U",
         "telegramLink": "https://t.me/movienestuz_bot",
         "id": 3
+    },
+    {
+        "title": "Minecraft",
+        "year": 2025,
+        "genre": "Fantastik",
+        "director": "google",
+        "poster": "https://th.bing.com/th/id/OIP.VZEZnJztB1YkfdQwKvlhdQHaLH?cb=iwp2&rs=1&pid=ImgDetMain",
+        "description": "korish uchun zor",
+        "trailerUrl": "https://youtu.be/AysZUNR0hV8?si=2rpy6NGq7w8wck3U",
+        "telegramLink": "https://t.me/movienestuz_bot",
+        "id": 4
+    },
+    {
+        "title": "interstellar",
+        "year": 2012,
+        "genre": "qiziq",
+        "director": "Oy",
+        "poster": "https://th.bing.com/th/id/OIP.jVVUF1D1uEuSPvQtvM5uXgHaLH?cb=iwp2&rs=1&pid=ImgDetMain",
+        "description": "korseyiz Marsga uchasz",
+        "trailerUrl": "https://youtu.be/AysZUNR0hV8?si=2rpy6NGq7w8wck3U",
+        "telegramLink": "https://t.me/movienestuz_bot",
+        "id": 5
     }
 ]

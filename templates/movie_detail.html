@@ -2,7 +2,7 @@
 
 {% block content %}
 <div id="movieDetails" class="active">
-    <button id="backBtn" onclick="window.location.href='{{ url_for('index') }}'"><i class="fas fa-arrow-left"></i> Orqaga</button>
+    <button id="backBtn" onclick="window.location.href='{{ url_for(index) }}'"><i class="fas fa-arrow-left"></i> Orqaga</button>
     
     <div id="movieDetailContent">
         <div class="movie-detail-container">
@@ -322,42 +322,4 @@
             const labels = Object.keys(dates);
             const data = Object.values(dates);
             
-            ```chartjs
-            {
-                "type": "line",
-                "data": {
-                    "labels": labels,
-                    "datasets": [{
-                        "label": "Kunlik izohlar soni",
-                        "data": data,
-                        "borderColor": "#1E90FF",
-                        "backgroundColor": "rgba(30, 144, 255, 0.2)",
-                        "fill": true,
-                        "tension": 0.4
-                    }]
-                },
-                "options": {
-                    "responsive": true,
-                    "plugins": {
-                        "legend": {
-                            "position": "top",
-                            "labels": { "color": "#333" }
-                        },
-                        "title": {
-                            "display": true,
-                            "text": "Izohlar faolligi",
-                            "color": "#333"
-                        }
-                    },
-                    "scales": {
-                        "x": {
-                            "title": { "display": true, "text": "Sana", "color": "#333" },
-                            "ticks": { "color": "#333" }
-                        },
-                        "y": {
-                            "title": { "display": true, "text": "Izohlar soni", "color": "#333" },
-                            "ticks": { "color": "#333", "beginAtZero": true }
-                        }
-                    }
-                }
-            }
+       

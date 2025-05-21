@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foydalanuvchilar - Admin Panel</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Admin Panel</h1>
+            <nav>
+                <ul>
+                    <li><a href="/admin">Boshqaruv paneli</a></li>
+                    <li><a href="/admin/users" class="active">Foydalanuvchilar</a></li>
+                    <li><a href="/admin/courses">Kurslar</a></li>
+                    <li><a href="/">Bosh sahifa</a></li>
+                    <li><a href="/logout">Chiqish</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="admin-users">
+                <h2>Foydalanuvchilarni boshqarish</h2>
+                
+                
+                    
+                
+                
+                <div class="add-user-form">
+                    <h3>Yangi foydalanuvchi qo'shish</h3>
+                    <form action="/admin/add_user" method="post">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">To'liq ism</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="password">Parol</label>
+                                <input type="password" id="password" name="password" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="role">Rol</label>
+                                <select id="role" name="role" required>
+                                    <option value="student">Talaba</option>
+                                    <option value="teacher">O'qituvchi</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn primary">Qo'shish</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="users-list">
+                    <h3>Barcha foydalanuvchilar</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ism</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                                <tr>
+                                    <td>1</td>
+                                    <td>Admin</td>
+                                    <td>dadordev@gmail.com</td>
+                                    <td>
+                                        
+                                            Admin
+                                        
+                                    </td>
+                                    <td>
+                                        
+                                            <span class="text-muted">Asosiy admin</span>
+                                        
+                                    </td>
+                                </tr>
+                            
+                                <tr>
+                                    <td>2</td>
+                                    <td>caad</td>
+                                    <td>sardormeliqulov53@gmail.com</td>
+                                    <td>
+                                        
+                                            Talaba
+                                        
+                                    </td>
+                                    <td>
+                                        
+                                            <a href="/admin/delete_user/2" class="btn danger small" onclick="return confirm('Haqiqatan ham bu foydalanuvchini o\'chirmoqchimisiz?')">O'chirish</a>
+                                        
+                                    </td>
+                                </tr>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 O'quv Jarayoni Boshqarish Tizimi</p>
+        </div>
+    </footer>
+
+    <script src="/static/js/script.js"></script>
+</body>
+</html>
